@@ -4,20 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="93546607-bd78-44be-a2c3-bfa826925dfa" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/pacman/Game.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/pacman/Main.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/pacman/images/down.gif" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/pacman/images/ghost.gif" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/pacman/images/heart.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/pacman/images/left.gif" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/pacman/images/pacman.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/pacman/images/right.gif" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/pacman/images/up.gif" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="93546607-bd78-44be-a2c3-bfa826925dfa" name="Changes" comment="Game done (change files absolute paths of images)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pacman/Model.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pacman/Pacman.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pacman/Game.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/pacman/Game.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,7 +42,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "jdk.selected.JAVA_MODULE": "openjdk-20",
-    "last_opened_file_path": "C:/Users/Nadia/IdeaProjects/TheMazeRepo",
+    "last_opened_file_path": "C:/Users/Nadia/IdeaProjects/PacmanProject",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -79,8 +68,17 @@
       <workItem from="1686330613987" duration="54000" />
       <workItem from="1686487564436" duration="8463000" />
       <workItem from="1686514004827" duration="298000" />
-      <workItem from="1686590214997" duration="7996000" />
+      <workItem from="1686590214997" duration="8430000" />
+      <workItem from="1686611565717" duration="6812000" />
     </task>
+    <task id="LOCAL-00001" summary="Game done (change files absolute paths of images)">
+      <created>1686608566627</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1686608566627</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -126,5 +124,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <MESSAGE value="Game done (change files absolute paths of images)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Game done (change files absolute paths of images)" />
   </component>
 </project>

@@ -41,9 +41,9 @@ public class Game extends JPanel implements ActionListener {
             21,  0,  0, 21,  0, 21,  0,  0,  0,  0,  0, 21,  0, 21,  0,  0, 21,
             25, 26, 26, 20,  0, 25, 26, 22,  0, 19, 26, 28,  0, 17, 26, 26, 28,
             0,  0,  0, 21,  0,  0,  0, 21,  0, 21,  0,  0,  0, 21,  0,  0,  0,
-            0,  0,  0, 21,  0, 19, 26, 24, 26, 24, 26, 22,  0, 21,  0,  0,  0,
-            0,  0,  0, 21,  0, 21,  0,  0,  0,  0,  0, 21,  0, 21,  0,  0,  0,
-            27, 26, 26, 16, 26, 20,  0,  0,  0,  0,  0, 17, 26, 16, 26, 26, 30,
+            0,  0,  0, 21,  0, 19, 26, 24, 18, 24, 26, 22,  0, 21,  0,  0,  0,
+            0,  0,  0, 21,  0, 21,  0,  0,  5,  0,  0, 21,  0, 21,  0,  0,  0,
+            27, 26, 26, 16, 26, 20,  0,  11,  8,  14,  0, 17, 26, 16, 26, 26, 30,
             0,  0,  0, 21,  0, 21,  0,  0,  0,  0,  0, 21,  0, 21,  0,  0,  0,
             19, 26, 26, 16, 26, 24, 26, 22,  0, 19, 26, 24, 26, 16, 26, 26, 22,
             21,  0,  0, 21,  0,  0,  0, 21,  0, 21,  0,  0,  0, 21,  0,  0, 21,
@@ -62,7 +62,6 @@ public class Game extends JPanel implements ActionListener {
     private Timer timer;
 
     public Game() {
-
         loadImages();
         initVariables();
         addKeyListener(new TAdapter());
@@ -98,7 +97,6 @@ public class Game extends JPanel implements ActionListener {
     }
 
     private void playGame(Graphics2D g2d) {
-
         if (dying) {
 
             death();
@@ -137,7 +135,7 @@ public class Game extends JPanel implements ActionListener {
 
         while (i < N_BLOCKS * N_BLOCKS && finished) {
 
-            if ((screenData[i]) != 0) {
+            if ((screenData[i] & 16) != 0) {
                 finished = false;
             }
 
@@ -147,7 +145,6 @@ public class Game extends JPanel implements ActionListener {
         if (finished) {
 
             score += 50;
-
             if (N_GHOSTS < MAX_GHOSTS) {
                 N_GHOSTS++;
             }
@@ -253,7 +250,7 @@ public class Game extends JPanel implements ActionListener {
         short ch;
 
         if (pacman_x % BLOCK_SIZE == 0 && pacman_y % BLOCK_SIZE == 0) {
-            pos = pacman_x / BLOCK_SIZE + N_BLOCKS * (int) (pacman_y / BLOCK_SIZE);
+            pos = pacman_x / BLOCK_SIZE + N_BLOCKS * (pacman_y / BLOCK_SIZE);
             ch = screenData[pos];
 
             if ((ch & 16) != 0) {
@@ -308,9 +305,6 @@ public class Game extends JPanel implements ActionListener {
                 g2d.setColor(new Color(0,72,251));
                 g2d.setStroke(new BasicStroke(5));
 
-                if ((levelData[i] == 0)) {
-                    g2d.fillRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
-                }
 
                 if ((screenData[i] & 1) != 0) {
                     g2d.drawLine(x, y, x, y + BLOCK_SIZE - 1);
@@ -342,7 +336,8 @@ public class Game extends JPanel implements ActionListener {
 
     private void initGame() {
 
-        lives = 3;
+
+        lives = 4;
         score = 0;
         initLevel();
         N_GHOSTS = 6;
@@ -366,8 +361,8 @@ public class Game extends JPanel implements ActionListener {
 
         for (int i = 0; i < N_GHOSTS; i++) {
 
-            ghost_y[i] = 4 * BLOCK_SIZE;
-            ghost_x[i] = 4 * BLOCK_SIZE;
+            ghost_y[i] = 8 * BLOCK_SIZE;
+            ghost_x[i] = 8 * BLOCK_SIZE;
             ghost_dy[i] = 0;
             ghost_dx[i] = dx;
             dx = -dx;
@@ -380,8 +375,8 @@ public class Game extends JPanel implements ActionListener {
             ghostSpeed[i] = validSpeeds[random];
         }
 
-        pacman_x = 7 * BLOCK_SIZE;
-        pacman_y = 11 * BLOCK_SIZE;
+        pacman_x = 8 * BLOCK_SIZE;
+        pacman_y = 12 * BLOCK_SIZE;
         pacmand_x = 0;
         pacmand_y = 0;
         req_dx = 0;
@@ -392,7 +387,6 @@ public class Game extends JPanel implements ActionListener {
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-
         Graphics2D g2d = (Graphics2D) g;
 
         g2d.setColor(Color.black);
