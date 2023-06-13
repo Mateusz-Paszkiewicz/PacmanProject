@@ -8,6 +8,10 @@ import java.awt.event.KeyEvent;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicIntegerArray;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 public class Game extends JPanel implements ActionListener {
@@ -34,6 +38,9 @@ public class Game extends JPanel implements ActionListener {
     private int pacman_x, pacman_y, pacmand_x, pacmand_y;
     private int req_dx, req_dy;
 
+    private ExecutorService executor;
+    private int NUM_THREADS = N_GHOSTS;
+
     private final short levelData[] = {
             19, 26, 26, 18, 26, 26, 26, 22,  0, 19, 26, 26, 26, 18, 26, 26, 22,
             21,  0,  0, 21,  0,  0,  0, 21,  0, 21,  0,  0,  0, 21,  0,  0, 21,
@@ -54,7 +61,7 @@ public class Game extends JPanel implements ActionListener {
             25, 26, 26, 26, 26, 26, 26, 24, 26, 24, 26, 26, 26, 26, 26, 26, 28,
     };
 
-    private final int validSpeeds[] = {1, 2, 3, 4, 6, 8};
+    private final int validSpeeds[] = {1, 2, 3, 4, 6};
     private final int maxSpeed = 6;
 
     private int currentSpeed = 3;
@@ -69,17 +76,15 @@ public class Game extends JPanel implements ActionListener {
         initGame();
     }
 
-
-
     private void loadImages() {
-        down = new ImageIcon("C:/Users/Nadia/IdeaProjects/PacmanProject/src/pacman/images/down.gif").getImage();
-        up = new ImageIcon("C:/Users/Nadia/IdeaProjects/PacmanProject/src/pacman/images/up.gif").getImage();
-        left = new ImageIcon("C:/Users/Nadia/IdeaProjects/PacmanProject/src/pacman/images/left.gif").getImage();
-        right = new ImageIcon("C:/Users/Nadia/IdeaProjects/PacmanProject/src/pacman/images/right.gif").getImage();
-        ghost = new ImageIcon("C:/Users/Nadia/IdeaProjects/PacmanProject/src/pacman/images/ghost.gif").getImage();
-        heart = new ImageIcon("C:/Users/Nadia/IdeaProjects/PacmanProject/src/pacman/images/heart.png").getImage();
-
+        down = new ImageIcon(getClass().getResource("/pacman/images/down.gif")).getImage();
+        up = new ImageIcon(getClass().getResource("/pacman/images/up.gif")).getImage();
+        left = new ImageIcon(getClass().getResource("/pacman/images/left.gif")).getImage();
+        right = new ImageIcon(getClass().getResource("/pacman/images/right.gif")).getImage();
+        ghost = new ImageIcon(getClass().getResource("/pacman/images/ghost.gif")).getImage();
+        heart = new ImageIcon(getClass().getResource("/pacman/images/heart.png")).getImage();
     }
+
     private void initVariables() {
 
         screenData = new short[N_BLOCKS * N_BLOCKS];
@@ -97,16 +102,29 @@ public class Game extends JPanel implements ActionListener {
     }
 
     private void playGame(Graphics2D g2d) {
+        executor = Executors.newFixedThreadPool(NUM_THREADS);
         if (dying) {
-
             death();
-
         } else {
-
             movePacman();
             drawPacman(g2d);
-            moveGhosts(g2d);
+
+            // Move ghosts using threads
+            for (int i = 0; i < N_GHOSTS; i++) {
+                int ghostIndex = i;
+
+                executor.submit(() -> {
+                    moveGhost(ghostIndex, g2d);
+                });
+            }
             checkMaze();
+        }
+        repaint();
+
+        try {
+            Thread.sleep(17); // Add a small delay (10 milliseconds)
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -163,17 +181,18 @@ public class Game extends JPanel implements ActionListener {
 
         if (lives == 0) {
             inGame = false;
+            executor.shutdown(); // Shutdown the ExecutorService
         }
 
         continueLevel();
     }
 
-    private void moveGhosts(Graphics2D g2d) {
+    private int[] moveGhost(int i, Graphics2D g2d) {
 
         int pos;
         int count;
+        int[] ghostCoords = new int[2];
 
-        for (int i = 0; i < N_GHOSTS; i++) {
             if (ghost_x[i] % BLOCK_SIZE == 0 && ghost_y[i] % BLOCK_SIZE == 0) {
                 pos = ghost_x[i] / BLOCK_SIZE + N_BLOCKS * (int) (ghost_y[i] / BLOCK_SIZE);
 
@@ -237,7 +256,11 @@ public class Game extends JPanel implements ActionListener {
 
                 dying = true;
             }
-        }
+
+            ghostCoords[0] = ghost_x[i] + 1;
+            ghostCoords[1] = ghost_y[i] + 1;
+
+            return ghostCoords;
     }
 
     private void drawGhost(Graphics2D g2d, int x, int y) {
@@ -341,6 +364,7 @@ public class Game extends JPanel implements ActionListener {
         score = 0;
         initLevel();
         N_GHOSTS = 6;
+        NUM_THREADS = N_GHOSTS;
         currentSpeed = 3;
     }
 
