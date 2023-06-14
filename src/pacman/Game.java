@@ -25,13 +25,16 @@ public class Game extends JPanel implements ActionListener {
     private final int N_BLOCKS = 17;
     private final int SCREEN_SIZE = N_BLOCKS * BLOCK_SIZE;
     private final int MAX_GHOSTS = 12;
+    private final int MAX_SPRITES = 12;
     private final int PACMAN_SPEED = 6;
 
-    private int N_GHOSTS = 6;
+    private int N_GHOSTS = 4;
+    private int N_SPRITES = 2;
+
     private int lives, score;
     private int[] dx, dy;
     private int[] ghost_x, ghost_y, ghost_dx, ghost_dy, ghostSpeed;
-
+    private int[] sprite_x, sprite_y, sprite_dx, sprite_dy, spriteSpeed;
     private Image heart, ghost;
     private Image up, down, left, right;
 
@@ -39,7 +42,7 @@ public class Game extends JPanel implements ActionListener {
     private int req_dx, req_dy;
 
     private ExecutorService executor;
-    private int NUM_THREADS = N_GHOSTS;
+    private int NUM_THREADS = N_GHOSTS + N_SPRITES;
 
     private final short levelData[] = {
             19, 26, 26, 18, 26, 26, 26, 22,  0, 19, 26, 26, 26, 18, 26, 26, 22,
@@ -62,6 +65,7 @@ public class Game extends JPanel implements ActionListener {
     };
 
     private final int validSpeeds[] = {1, 2, 3, 4, 6};
+    private final int validSpriteSpeeds[] = {1, 1, 2, 2, 3};
     private final int maxSpeed = 6;
 
     private int currentSpeed = 3;
@@ -93,7 +97,12 @@ public class Game extends JPanel implements ActionListener {
         ghost_dx = new int[MAX_GHOSTS];
         ghost_y = new int[MAX_GHOSTS];
         ghost_dy = new int[MAX_GHOSTS];
+        sprite_x = new int[MAX_SPRITES];
+        sprite_dx = new int[MAX_SPRITES];
+        sprite_y = new int[MAX_SPRITES];
+        sprite_dy = new int[MAX_SPRITES];
         ghostSpeed = new int[MAX_GHOSTS];
+        spriteSpeed = new int[MAX_SPRITES];
         dx = new int[4];
         dy = new int[4];
 
@@ -112,9 +121,15 @@ public class Game extends JPanel implements ActionListener {
             // Move ghosts using threads
             for (int i = 0; i < N_GHOSTS; i++) {
                 int ghostIndex = i;
-
                 executor.submit(() -> {
                     moveGhost(ghostIndex, g2d);
+                });
+            }
+
+            for (int i = 0; i < N_SPRITES; i++) {
+                int spriteIndex = i;
+                executor.submit(() -> {
+                    moveSprite(spriteIndex, g2d);
                 });
             }
             checkMaze();
@@ -122,7 +137,7 @@ public class Game extends JPanel implements ActionListener {
         repaint();
 
         try {
-            Thread.sleep(17); // Add a small delay (10 milliseconds)
+            Thread.sleep(17); // Add a small delay (17 milliseconds)
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -181,17 +196,91 @@ public class Game extends JPanel implements ActionListener {
 
         if (lives == 0) {
             inGame = false;
-            executor.shutdown(); // Shutdown the ExecutorService
+            executor.shutdownNow(); // Shutdown the ExecutorService
         }
 
         continueLevel();
     }
 
-    private int[] moveGhost(int i, Graphics2D g2d) {
+    private void moveSprite(int i, Graphics2D g2d) {
+        int pos;
+        int count;
+
+        if (sprite_x[i] % BLOCK_SIZE == 0 && sprite_y[i] % BLOCK_SIZE == 0) {
+            pos = sprite_x[i] / BLOCK_SIZE + N_BLOCKS * (int) (sprite_y[i] / BLOCK_SIZE);
+
+            count = 0;
+
+            if ((screenData[pos] & 1) == 0 && sprite_dx[i] != 1) {
+                dx[count] = -1;
+                dy[count] = 0;
+                count++;
+            }
+
+            if ((screenData[pos] & 2) == 0 && sprite_dy[i] != 1) {
+                dx[count] = 0;
+                dy[count] = -1;
+                count++;
+            }
+
+            if ((screenData[pos] & 4) == 0 && sprite_dx[i] != -1) {
+                dx[count] = 1;
+                dy[count] = 0;
+                count++;
+            }
+
+            if ((screenData[pos] & 8) == 0 && sprite_dy[i] != -1) {
+                dx[count] = 0;
+                dy[count] = 1;
+                count++;
+            }
+
+            if (count == 0) {
+                if ((screenData[pos] & 15) == 15) {
+                    sprite_dx[i] = 0;
+                    sprite_dy[i] = 0;
+                } else {
+                    sprite_dx[i] = -sprite_dx[i];
+                    sprite_dy[i] = -sprite_dy[i];
+                }
+            } else {
+                int playerPos = pacman_x / BLOCK_SIZE + N_BLOCKS * (pacman_y / BLOCK_SIZE);
+                int targetX = playerPos % N_BLOCKS;
+                int targetY = playerPos / N_BLOCKS;
+
+                int minDistance = Integer.MAX_VALUE;
+                int bestDirection = -1;
+
+                for (int j = 0; j < count; j++) {
+                    int nextX = (sprite_x[i] / BLOCK_SIZE) + dx[j];
+                    int nextY = (sprite_y[i] / BLOCK_SIZE) + dy[j];
+                    int distance = Math.abs(nextX - targetX) + Math.abs(nextY - targetY);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        bestDirection = j;
+                    }
+                }
+
+                sprite_dx[i] = dx[bestDirection];
+                sprite_dy[i] = dy[bestDirection];
+            }
+        }
+
+        sprite_x[i] = sprite_x[i] + (sprite_dx[i] * spriteSpeed[i]);
+        sprite_y[i] = sprite_y[i] + (sprite_dy[i] * spriteSpeed[i]);
+        drawSprite(g2d, sprite_x[i] + 1, sprite_y[i] + 1);
+
+        if (sprite_x[i] > (pacman_x - 12) && sprite_x[i] < (pacman_x + 12)
+                && sprite_y[i] > (pacman_y - 12) && sprite_y[i] < (pacman_y + 12)
+                && inGame) {
+            dying = true;
+        }
+    }
+
+    private void moveGhost(int i, Graphics2D g2d) {
 
         int pos;
         int count;
-        int[] ghostCoords = new int[2];
 
             if (ghost_x[i] % BLOCK_SIZE == 0 && ghost_y[i] % BLOCK_SIZE == 0) {
                 pos = ghost_x[i] / BLOCK_SIZE + N_BLOCKS * (int) (ghost_y[i] / BLOCK_SIZE);
@@ -256,15 +345,14 @@ public class Game extends JPanel implements ActionListener {
 
                 dying = true;
             }
-
-            ghostCoords[0] = ghost_x[i] + 1;
-            ghostCoords[1] = ghost_y[i] + 1;
-
-            return ghostCoords;
     }
 
     private void drawGhost(Graphics2D g2d, int x, int y) {
         g2d.drawImage(ghost, x, y, this);
+    }
+
+    private void drawSprite(Graphics2D g2d, int x, int y) {
+        g2d.drawImage(heart, x, y, this);
     }
 
     private void movePacman() {
@@ -358,13 +446,12 @@ public class Game extends JPanel implements ActionListener {
     }
 
     private void initGame() {
-
-
         lives = 4;
         score = 0;
         initLevel();
-        N_GHOSTS = 6;
-        NUM_THREADS = N_GHOSTS;
+        N_GHOSTS = 2;
+        N_SPRITES = 1;
+        NUM_THREADS = N_GHOSTS + N_SPRITES;
         currentSpeed = 3;
     }
 
@@ -390,13 +477,29 @@ public class Game extends JPanel implements ActionListener {
             ghost_dy[i] = 0;
             ghost_dx[i] = dx;
             dx = -dx;
-            random = (int) (Math.random() * (currentSpeed + 1));
+            random = (int) (Math.random() * Math.min(currentSpeed + 1, validSpriteSpeeds.length));
 
             if (random > currentSpeed) {
                 random = currentSpeed;
             }
 
             ghostSpeed[i] = validSpeeds[random];
+        }
+
+        for (int i = 0; i < N_SPRITES; i++) {
+
+            sprite_y[i] = 8 * BLOCK_SIZE;
+            sprite_x[i] = 8 * BLOCK_SIZE;
+            sprite_dy[i] = 0;
+            sprite_dx[i] = dx;
+            dx = -dx;
+            random = (int) (Math.random() * (currentSpeed + 1));
+
+            if (random > currentSpeed) {
+                random = currentSpeed;
+            }
+
+            spriteSpeed[i] = validSpriteSpeeds[random];
         }
 
         pacman_x = 8 * BLOCK_SIZE;
@@ -466,5 +569,4 @@ public class Game extends JPanel implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         repaint();
     }
-
 }
