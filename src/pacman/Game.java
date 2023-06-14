@@ -35,7 +35,7 @@ public class Game extends JPanel implements ActionListener {
     private int[] dx, dy;
     private int[] ghost_x, ghost_y, ghost_dx, ghost_dy, ghostSpeed;
     private int[] sprite_x, sprite_y, sprite_dx, sprite_dy, spriteSpeed;
-    private Image heart, ghost;
+    private Image heart, ghost, sprite;
     private Image up, down, left, right;
 
     private int pacman_x, pacman_y, pacmand_x, pacmand_y;
@@ -87,6 +87,7 @@ public class Game extends JPanel implements ActionListener {
         right = new ImageIcon(getClass().getResource("/pacman/images/right.gif")).getImage();
         ghost = new ImageIcon(getClass().getResource("/pacman/images/ghost.gif")).getImage();
         heart = new ImageIcon(getClass().getResource("/pacman/images/heart.png")).getImage();
+        sprite = new ImageIcon(getClass().getResource("/pacman/images/sprite.png")).getImage();
     }
 
     private void initVariables() {
@@ -105,13 +106,14 @@ public class Game extends JPanel implements ActionListener {
         spriteSpeed = new int[MAX_SPRITES];
         dx = new int[4];
         dy = new int[4];
+        executor = Executors.newFixedThreadPool(NUM_THREADS);
 
-        timer = new Timer(40, this);
+        timer = new Timer(20, this);
         timer.start();
     }
 
     private void playGame(Graphics2D g2d) {
-        executor = Executors.newFixedThreadPool(NUM_THREADS);
+
         if (dying) {
             death();
         } else {
@@ -134,7 +136,7 @@ public class Game extends JPanel implements ActionListener {
             }
             checkMaze();
         }
-        repaint();
+        //repaint();
 
         try {
             Thread.sleep(17); // Add a small delay (17 milliseconds)
@@ -196,7 +198,7 @@ public class Game extends JPanel implements ActionListener {
 
         if (lives == 0) {
             inGame = false;
-            executor.shutdownNow(); // Shutdown the ExecutorService
+            //executor.shutdownNow(); // Shutdown the ExecutorService
         }
 
         continueLevel();
@@ -352,7 +354,7 @@ public class Game extends JPanel implements ActionListener {
     }
 
     private void drawSprite(Graphics2D g2d, int x, int y) {
-        g2d.drawImage(heart, x, y, this);
+        g2d.drawImage(sprite, x, y, this);
     }
 
     private void movePacman() {
@@ -449,7 +451,7 @@ public class Game extends JPanel implements ActionListener {
         lives = 4;
         score = 0;
         initLevel();
-        N_GHOSTS = 2;
+        N_GHOSTS = 3;
         N_SPRITES = 1;
         NUM_THREADS = N_GHOSTS + N_SPRITES;
         currentSpeed = 3;
